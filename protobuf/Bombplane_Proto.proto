@@ -1,0 +1,235 @@
+syntax = "proto3";
+package bombplane_proto; //定义protobuf的包名称空间，对应C++,C#的namespace，Java的package
+
+// request		-- need reply(response)
+// notification	-- no reply needed
+// broadcast	-- no reply needed
+
+enum Type
+{
+	UNKNOWN						= 0;
+
+
+    // Login & Reg
+
+ 	LOGIN_REQUEST  				= 10001;
+ 	LOGIN_RESPONSE  			= 10002;
+
+	ONLINELIST_NOTIFICATION		= 10003; // S->C: 为新登录的用户发送列表
+	UPDATEONLINE_BROADCAST		= 10004; // 上线或下线需要对所有用户发送
+
+	// REG_REQUEST 				= 10011;
+	// REG_RESPONSE				= 10012;
+
+
+	// Invite
+
+	INVITE_REQUEST 				= 10021; // A点击B进行邀请，服务器只转发
+	INVITE_RESPONSE				= 10022; // B接收A的邀请
+	UPDATEROOM_BROADCAST		= 10023; // 服务器对所有用户发送“AB进入或退出房间”的消息
+
+
+	// KeepAlive
+
+	QUIT_NOTIFICATION			= 20001; // C->S: 关闭窗口或掉线
+
+	KEEPALIVE_REQUEST			= 20002;
+	KEEPALIVE_RESPONSE 			= 20003;
+
+
+	// Game
+
+	INITPOS_REQUEST				= 30001; // 初始化设置飞机坐标
+	GAMESTART_RESPONSE			= 30002; // 通知双方游戏开始
+
+	GAMEOVER_NOTIFICATION		= 30003; // 输赢结束
+	GAMECRUSH_NOTIFICATION		= 30004; // 异常结束
+
+	BOMB_REQUEST				= 30011; // 单坐标轰炸
+	BOMB_RESPONSE				= 30012; // 向双方同时发送轰炸结果
+
+	GUESS_REQUEST				= 30021; // 三坐标（整机）猜测
+	GUESS_RESPONSE				= 30022; // 向双方同时发送猜测结果
+}
+
+/*下面定义具体的消息内容，Type枚举中的每个消息ID，如果有消息体，则会对应一个message 定义，如果无消息体则不必要*/ 
+
+// Login & Reg
+
+message LoginRequest
+{
+	bytes username	= 1;
+	bytes password	= 2;
+};
+
+
+
+enum LoginState
+{
+	SUCCESS			= 0;
+	SUCCESS_KICK	= 1;
+
+	NOT_EXIST		= 3;
+	WRONG_PASSWORD	= 4;
+	SERVER_ERROR	= 5;
+};
+
+message LoginResponse
+{
+	LoginState state	= 1;
+	int32 userid		= 2;
+};
+
+
+
+message OnlineUser
+{
+	bytes username	= 1;
+	int32 userid	= 2;
+	bool  available	= 3;
+};
+
+message OnlinelistNotification
+{
+ 	repeated OnlineUser onlinelist	= 1;
+};
+
+
+message UpdateonlineBroadcast
+{
+ 	bytes username	= 1;
+ 	int32 userid	= 2;
+ 	bool  onoff		= 3;
+};
+
+
+// Invite
+
+message InviteRequest
+{
+	int32 taruserid	= 1;
+	int32 srcuserid	= 2;
+};
+
+message InviteResponse
+{
+	int32 taruserid	= 1;
+	bool  accept	= 2;
+};
+
+
+message UpdateroomBroadcast
+{
+	int32 userid1	= 1;
+	int32 userid2	= 2;
+	bool  inout		= 3;
+};
+
+
+
+// Game
+
+message Coordinate
+{
+	int32 x = 1;
+	int32 y = 2;
+};
+
+message PlaneLocator
+{
+	Coordinate pos1 = 1;
+	Coordinate pos2 = 2;
+	Coordinate pos3 = 3;
+};
+
+message InitposRequest
+{
+	PlaneLocator loc	= 1;
+	int32 userid		= 2;
+};
+
+message GameoverNotification
+{
+	int32 winnerid = 1;
+};
+
+
+// enum CRUSH_REASON
+// {
+// 	PEER_DISCONNECT = 0;
+// 	SERVER_ERROR 	= 1;
+// }
+// message GamecrushNotification
+// {
+// 	CRUSH_REASON reason = 1;
+// }
+
+message BombRequest
+{
+	Coordinate pos	= 1;
+	int32 userid	= 2;
+};
+
+enum BOMB_RESULT
+{
+	MISS 		= 0;
+	HIT 		= 1;
+	DESTORYED 	= 2;
+};
+
+message BombResponse
+{
+	BOMB_RESULT res	= 1;
+	Coordinate pos	= 2;
+};
+
+
+message GuessRequest
+{
+	PlaneLocator loc	= 1;
+	int32 userid		= 2;
+};
+
+
+message GuessResponse
+{
+	bool res			= 1;
+	PlaneLocator loc	= 2;
+}
+
+
+message Message
+{
+	Type type = 1;
+	// fixed32 sequence = 2; 
+	// 消息系列号，主要用于Request和Response，Response的值必须和Request相同，使得发送端可以进行事务匹配处理
+
+	oneof body
+	{
+		// Login & Reg
+
+ 		LoginRequest loginrequest						= 2;
+ 		LoginResponse loginresponse						= 3;
+
+		OnlinelistNotification onlinelistnotification	= 4;
+		UpdateonlineBroadcast updatelistnotification	= 5;
+
+
+		InviteRequest inviterequest						= 6;
+		UpdateroomBroadcast updateroombroadcast			= 7;
+
+		// Game
+
+		InitposRequest initposrequest					= 8;
+
+		GameoverNotification gameovernnotification		= 9;
+		// GamecrushNotification gamecrushnotification	= 14;
+
+		BombRequest bombrequest							= 10;
+		BombResponse bombresponse						= 11;
+
+		GuessRequest guessrequest						= 12;
+		GuessResponse guessresponse						= 13;
+	}
+}
+
