@@ -1,11 +1,9 @@
 syntax = "proto3";
-package bombplane_proto; //定义protobuf的包名称空间，对应C++,C#的nanmespace，Java的package
+package bombplane_proto; //定义protobuf的包名称空间，对应C++,C#的namespace，Java的package
 
-
-
-// request -- need reply -- response 
-// notification -- no reply needed
-// broadcast -- no reply needed
+// request		-- need reply(response)
+// notification	-- no reply needed
+// broadcast	-- no reply needed
 
 enum TYPE
 {
@@ -50,7 +48,7 @@ enum TYPE
 	Bomb_Request				= 30011; // 单坐标轰炸
 	Bomb_Response				= 30012; // 向双方同时发送轰炸结果
 
-	Guess_Request				= 30021; // 双坐标猜测
+	Guess_Request				= 30021; // 三坐标（整机）猜测
 	Guess_Response				= 30022; // 向双方同时发送猜测结果
 }
 
@@ -60,50 +58,48 @@ enum TYPE
 
 message LoginRequest
 {
-	bytes username  = 1;
-	bytes password = 2;
+	bytes username	= 1;
+	bytes password	= 2;
 };
 
 
 
 enum LOGINSTATE
 {
-	SUCCESS = 0;
-	SUCCESS_KICK = 1;
+	SUCCESS			= 0;
+	SUCCESS_KICK	= 1;
 
-	NOT_EXIST = 3;
-	WRONG_PASSWORD = 4;
-	SERVER_ERROR = 5;
+	NOT_EXIST		= 3;
+	WRONG_PASSWORD	= 4;
+	SERVER_ERROR	= 5;
 };
-
 
 message LoginResponse
 {
-	LOGINSTATE state = 1;
-	int32 userid 	 = 2;
+	LOGINSTATE state	= 1;
+	int32 userid		= 2;
 };
 
 
 
 message OnlineUser
 {
-	bytes username  = 1;
+	bytes username	= 1;
 	int32 userid	= 2;
 	bool  available	= 3;
 };
 
 message OnlinelistNotification
 {
-
- 	repeated OnlineUser onlinelist  = 1;
+ 	repeated OnlineUser onlinelist	= 1;
 };
 
 
 message UpdateonlineBroadcast
 {
- 	bytes username  = 1;
- 	int32 userid    = 2;
- 	bool  onoff 	= 3;
+ 	bytes username	= 1;
+ 	int32 userid	= 2;
+ 	bool  onoff		= 3;
 };
 
 
@@ -111,14 +107,14 @@ message UpdateonlineBroadcast
 
 message InviteRequest
 {
-	int32 taruserid = 1;
-	int32 srcuserid = 2;
+	int32 taruserid	= 1;
+	int32 srcuserid	= 2;
 };
 
 message InviteResponse
 {
-	int32 taruserid = 1;
-	bool  accept 	= 2;
+	int32 taruserid	= 1;
+	bool  accept	= 2;
 };
 
 
@@ -139,7 +135,6 @@ message Coordinate
 	int32 y = 2;
 };
 
-
 message PlaneLocator
 {
 	Coordinate pos1 = 1;
@@ -149,8 +144,8 @@ message PlaneLocator
 
 message InitposRequest
 {
-	PlaneLocator loc = 1;
-	int32 userid 	 = 2;
+	PlaneLocator loc	= 1;
+	int32 userid		= 2;
 };
 
 message GameoverNotification
@@ -171,8 +166,8 @@ message GameoverNotification
 
 message BombRequest
 {
-	Coordinate pos 	= 1;
-	int32 userid 	= 2;
+	Coordinate pos	= 1;
+	int32 userid	= 2;
 };
 
 enum BOMB_RESULT
@@ -184,59 +179,58 @@ enum BOMB_RESULT
 
 message BombResponse
 {
-	BOMB_RESULT res = 1;
-	Coordinate pos 	= 2;
+	BOMB_RESULT res	= 1;
+	Coordinate pos	= 2;
 };
 
 
 message GuessRequest
 {
-	PlaneLocator loc = 1;
-	int32 userid 	 = 2;
+	PlaneLocator loc	= 1;
+	int32 userid		= 2;
 };
 
 
 message GuessResponse
 {
-	bool res 		 = 1;
-	PlaneLocator loc = 2;
+	bool res			= 1;
+	PlaneLocator loc	= 2;
 }
 
 
-/*请求消息集合，任何时刻根据MSG 的id值，最多只有一个有效性， 从程序的逻辑上去保证，编译器（不管是protoc还是具体语言的编译器都无法保证）*/ 
+/*请求消息集合，任何时刻根据MSG 的id值，最多只有一个有效性， 从程序的逻辑上去保证，编译器（不管是protoc还是具体语言的编译器都无法保证）*/
 
 message Body
 {
     // Login & Reg
 
- 	LoginRequest loginrequest = 1;
- 	LoginResponse loginresponse = 2;	
+ 	LoginRequest loginrequest						= 1;
+ 	LoginResponse loginresponse						= 2;
 
-	OnlinelistNotification onlinelistnotification = 3;
-	UpdateonlineBroadcast updatelistnotification = 4;
+	OnlinelistNotification onlinelistnotification	= 3;
+	UpdateonlineBroadcast updatelistnotification	= 4;
 
 
-	InviteRequest inviterequest = 5;	
-	UpdateroomBroadcast updateroombroadcast = 6;
+	InviteRequest inviterequest						= 5;
+	UpdateroomBroadcast updateroombroadcast			= 6;
 
 	// Game
 
-	InitposRequest initposrequest = 7;		
+	InitposRequest initposrequest					= 7;
 
-	GameoverNotification gameovernnotification = 8;
-	// GamecrushNotification gamecrushnotification = 14;
+	GameoverNotification gameovernnotification		= 8;
+	// GamecrushNotification gamecrushnotification	= 14;
 
-	BombRequest bombrequest = 9;
-	BombResponse bombresponse = 10;			
+	BombRequest bombrequest							= 9;
+	BombResponse bombresponse						= 10;
 
-	GuessRequest guessrequest = 11;		
-	GuessResponse guessresponse = 12;
+	GuessRequest guessrequest						= 11;
+	GuessResponse guessresponse						= 12;
 }
 
 
-message Message 
+message Message
 {
-
 	TYPE type = 1;
 	// fixed32 sequence = 2; 
 	// 消息系列号，主要用于Request和Response，Response的值必须和Request相同，使得发送端可以进行事务匹配处理
